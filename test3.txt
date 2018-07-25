@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 even een aanpassing doen
 
 Paul past iets aan.
+=======
 even een aanpassing (d)oen
+>>>>>>> 1a605acd6699c6fe4088d58c7cb0c45f00b4dc7d
