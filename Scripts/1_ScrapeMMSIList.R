@@ -10,20 +10,21 @@ library(rvest)
 callAddress <- function (webaddress) {
   message('trying url:', webaddress)
   breakloop <- FALSE
-  i <- 0
+  i <- 1
   while (!breakloop) {
     #Pause system to pretend realworld user
-    Sys.sleep(runif(1, 1,1.5))
+    Sys.sleep(runif(1, 5,8))
+    message('Attempt', i, ' out of 10')
     page<- try(readLines(webaddress), silent = TRUE)
     #if an error occurs exit the function
     if(!inherits(page,"try-error")) breakloop <- TRUE
-    #if 404 then exit this function
-    if(grepl("404 Not Found",capture.output(warnings())[3])) breakloop <- TRUE
+    #if 404 then exit the loop 
+    if(grepl("404 Not Found",capture.output(warnings())[3])) i <-10 #effectively break the loop. Cheating here as the call breakloop <- TRUE does not seem to work.
     i <- i + 1
-    if (i == 10) breakloop <- TRUE
+    if (i >= 10) breakloop <- TRUE
   }
   closeAllConnections()
-  message('used iterations:', i, ' out of 10')
+  
   return(page)
 }
 
@@ -53,7 +54,7 @@ colnames(PageShipResult) <- vars
 rootShipAddress<- 'https://www.marinetraffic.com/en/ais/details/ships/mmsi:'
 
 # Now loop through the IMO# per page
-for (i in 266:length(MMSIUniek_9d)) {
+for (i in 1:length(MMSIUniek_9d)) {
   #Construct webaddress for a single ship
   webaddress <- paste0(rootShipAddress, MMSIUniek_9d[i])
   #call ship page if not testing
@@ -77,8 +78,8 @@ for (i in 266:length(MMSIUniek_9d)) {
     #part of info available generic
     for (j in 4:length(vars)) {
       if (j == 2) {text <- paste0('<span>', vars[j])
-      } else {text <- paste0('<span>' ,vars[j], ': </span>')}
-      line <- grep(text, page2)
+      } else {text <- gsub("[[:space:]]", "", paste0('<span>' ,vars[j], ': </span>'))}
+      line <- grep(text, gsub("[[:space:]]", "", page2))
       if (length(line) == 0) {PageShipResult[i,j] <- "failed retrieval"
       } else {PageShipResult[i,j] <-gsub(".*[>]([^.]+)[<].*", "\\1", page2[min(line)+1])}
     }
