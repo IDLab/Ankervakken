@@ -18,6 +18,15 @@ ship_features$ShipKeelLayingDate <- as.POSIXct(ship_features$ShipKeelLayingDate)
 # Corrigeren voor MMSI correct inlezen
 ankervakken_9d$MMSI<- substr(ankervakken_9d$MMSI,1,9)
 
+# Uniek maken ship features o.b.v. IMO-nr (eerst volgnummers verwijderen)
+ship_features <-
+  ship_features %>%
+  select(-X) %>%
+  arrange(IMO) %>%
+  mutate(double = if_else(IMO == lag(IMO), 1, 0)) %>%
+  filter(double != 1) %>%
+  select(-double)
+
 save(ankervakken_2017Q1, file="Data/1_reading_cleaning/ankervakken_2017Q1.Rda")
 save(ankervakken_9d, file="Data/1_reading_cleaning/ankervakken_9d.Rda")
 save(afstanden_9d_combis, file="Data/1_reading_cleaning/afstanden_9d_combis.Rda")
