@@ -6,11 +6,14 @@ library(dplyr)
 ankervakken_2017Q1 <- read_xlsx("Bronnen/schepenankervakkenq1.xlsx", sheet="All")
 ankervakken_9d <- read.csv2("Bronnen/20170401-0409.csv", sep = ",",stringsAsFactors=FALSE)
 afstanden_9d_combis <- read.csv2("Bronnen/distances201704010409.csv", sep = ",", stringsAsFactors=FALSE)
+ship_features <- read.csv2("Bronnen/Dataset Patrick.csv", sep = ",", stringsAsFactors=FALSE)
 
 # Corrigeren voor inlezen als Date Time
 afstanden_9d_combis$A <- as.POSIXct(afstanden_9d_combis$A)
 ankervakken_9d$Starttime <- as.POSIXct(ankervakken_9d$Starttime)
 ankervakken_9d$Updatetime <- as.POSIXct(ankervakken_9d$Updatetime)
+ship_features$DateOfLastVisit <- as.POSIXct(ship_features$DateOfLastVisit)
+ship_features$ShipKeelLayingDate <- as.POSIXct(ship_features$ShipKeelLayingDate)
 
 # Corrigeren voor MMSI correct inlezen
 ankervakken_9d$MMSI<- substr(ankervakken_9d$MMSI,1,9)
@@ -18,6 +21,7 @@ ankervakken_9d$MMSI<- substr(ankervakken_9d$MMSI,1,9)
 save(ankervakken_2017Q1, file="Data/1_reading_cleaning/ankervakken_2017Q1.Rda")
 save(ankervakken_9d, file="Data/1_reading_cleaning/ankervakken_9d.Rda")
 save(afstanden_9d_combis, file="Data/1_reading_cleaning/afstanden_9d_combis.Rda")
+save(ship_features, file="Data/1_reading_cleaning/ship_features.Rda")
 
 # Ophalen R-databestanden
 load("Data/1_reading_cleaning/afstanden_9d_combis.Rda")
