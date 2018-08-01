@@ -32,11 +32,8 @@ save(ankervakken_9d, file="Data/1_reading_cleaning/ankervakken_9d.Rda")
 save(afstanden_9d_combis, file="Data/1_reading_cleaning/afstanden_9d_combis.Rda")
 save(ship_features, file="Data/1_reading_cleaning/ship_features.Rda")
 
-# Ophalen R-databestanden
-load("Data/1_reading_cleaning/afstanden_9d_combis.Rda")
-
 # Ankervakken 9 dagen uniek maken op combinatie schip X dag (voor visualisatie in de tijd)
-ankervakken_9d_uniek <-
+ankervakken_9d_schip_X_dag <-
   ankervakken_9d %>%
   mutate(dag = substr(Updatetime,1,10)) %>%
   filter(Name != "") %>%
@@ -50,11 +47,23 @@ ankervakken_9d_uniek <-
             Schiptype   = first(Schiptype),
             Destination = first(Destination))
 
+# Ankervakken 9 dagen uniek maken op schip (voor aanmaken basisbestand met kenmerken schepen)
+ankervakken_9d_uniek_schip <-
+  ankervakken_9d %>%
+  mutate(IMO = substr(IMO,1,7)) %>%
+  arrange(MMSI, desc(IMO), desc(Name)) %>%
+  group_by(MMSI) %>%
+  summarise(IMO  = first(IMO),
+            Name = first(Name))
+
 # Wegschrijven data 9 dagen per schip
-save(ankervakken_9d_uniek, file="Data/1_reading_cleaning/ankervakken_9d_uniek.Rda")
+save(ankervakken_9d_schip_X_dag, file="Data/1_reading_cleaning/ankervakken_9d_schip_X_dag.Rda")
 
 # Wegschrijven data 9 dagen per schip als csv t.b.v. Power BI
-write.csv2(ankervakken_9d_uniek, file="Data/1_reading_cleaning/ankervakken_9d_uniek.csv", row.names=TRUE)
+write.csv2(ankervakken_9d_schip_X_dag, file="Data/1_reading_cleaning/ankervakken_9d_schip_X_dag.csv", row.names=TRUE)
+
+# Wegschrijven data unieke schepen
+save(ankervakken_9d_uniek_schip, file="Data/1_reading_cleaning/ankervakken_9d_uniek_schip.Rda")
 
 # Lijst maken en wegschrijven van unieke MMSI nummers in dataset, om te gebruiken voor bouwen scheepsDB
 MMSIUniek_9d <- (unique(ankervakken_9d$MMSI))
