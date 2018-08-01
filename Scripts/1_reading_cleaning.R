@@ -1,6 +1,7 @@
 # Packages
 library(readxl)
 library(dplyr)
+library(stringr)
 
 # Ophalen data en wegschrijven als R-bestanden
 ankervakken_2017Q1 <- read_xlsx("Bronnen/schepenankervakkenq1.xlsx", sheet="All")
@@ -14,6 +15,8 @@ ankervakken_9d$Updatetime <- as.POSIXct(ankervakken_9d$Updatetime)
 
 # Corrigeren voor MMSI correct inlezen
 ankervakken_9d$MMSI<- substr(ankervakken_9d$MMSI,1,9)
+#Correctie voor IMO correct inlezen
+ankervakken_9d$IMO<- str_sub(ankervakken_9d$IMO,1,-3)
 
 save(ankervakken_2017Q1, file="Data/1_reading_cleaning/ankervakken_2017Q1.Rda")
 save(ankervakken_9d, file="Data/1_reading_cleaning/ankervakken_9d.Rda")
@@ -46,5 +49,4 @@ write.csv2(ankervakken_9d_uniek, file="Data/1_reading_cleaning/ankervakken_9d_un
 # Lijst maken en wegschrijven van unieke MMSI nummers in dataset, om te gebruiken voor bouwen scheepsDB
 MMSIUniek_9d <- (unique(ankervakken_9d$MMSI))
 write.csv2(MMSIUniek_9d, file="Data/1_reading_cleaning/MMSIUniek_9d.csv", sep =",", row.names=FALSE)
-
 

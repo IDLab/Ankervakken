@@ -26,7 +26,8 @@ afstanden_melt <- melt(afstanden_9d_combis, id.vars = c("X","A"))
 afstanden_melt <-
   afstanden_melt %>%
   arrange(variable, A) %>%
-  mutate(value = as.numeric(value))
+  mutate(value = as.numeric(value)) %>%
+  mutate_if(is.factor,as.character)
 
 ```
 
@@ -52,19 +53,8 @@ ggplot(afstanden_melt, aes(x = A, y = value, color = variable)) +
 ```
 
 ```{r prep_network}
-# Minimale afstand per combinatie wegschrijven in een data frame
-min_afstand <- data.frame()
-for (i in 1:length(unique(afstanden_melt$variable))) {
-  
-  selectie_i <- afstanden_melt %>% filter(variable == unique(afstanden_melt$variable)[i])
-  
-  min_afstand_i <- selectie_i[which.min(selectie_i$value),]
-  
-  min_afstand <- bind_rows(min_afstand, min_afstand_i)
-  
-}
-
 # Minimale afstand met bandbreedte (percentage) in combinatie met tijdsduur wegschrijven in data frame
+
 min_afstand_tijd <- data.frame()
 bandbreedte <- .1
 
@@ -100,10 +90,28 @@ min_afstand_tijd <-
   min_afstand_tijd %>%
   filter(schip_1 != "nan" & schip_2 != "nan")
 
+```
+
+### Voorkomen van kortste afstanden (altijd <300m)
+overzicht van voorkomen van kortste afstanden bij schepenparen
+
+```{r plot_time_dist}
+ggplot(data = min_afstand_tijd, aes(x=d_min*1852)) +
+  geom_histogram(binwidth = 50, colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
+  xlab("Kortste afstand (in meter") +
+  ylab("Afstand")
+
+```
+
+### Netwerk onderlinge afstand schepen
+Let op: dikte lijn en NIET lengte representeert afstand (verwarrend...)
+
+```{r plot_network}
 # Edge list
 data_netwerk <-
   min_afstand_tijd %>%
   select(schip_1, schip_2, d_min) %>%
+  filter(d_min != 0)%>%
   arrange(d_min)
 
 # Combinaties komen allemaal twee keer voor, waarbij de volgorde van schepen is omgedraaid. Hierop ontdubbelen,
@@ -119,21 +127,17 @@ netwerk_input <- network(adj_matrix, directed=FALSE)
 
 # Edge size bepalen
 edgesize <- mean(data_netwerk$d_min) / data_netwerk$d_min
-
-```
-
-### Netwerk onderlinge afstand schepen
-Let op: dikte lijn en NIET lengte representeert afstand (verwarrend...)
-
-```{r netwerk}
+edgesize <- (data_netwerk$d_min/(300/1852))*2
 
 # Netwerk visualiseren
 ggnet2(
   netwerk_input,
-  node.color = "green",
+  node.color = "blue",
+  node.size = 5,
   edge.size = edgesize,
+  edge.color = "lightblue",
   label = TRUE,
-  label.size = 3
+  label.size = 1
 )
 
 ```
