@@ -9,12 +9,12 @@ library(dplyr)
 library(ggplot2)
 library(reshape2)
 library(lubridate)
-library(BiocGenerics)
 library(network)
 library(gmodels)
 library(graph)
 library(GGally)
 library(sna)
+library(parallel)
 
 set.seed(1)
 
@@ -33,7 +33,7 @@ afstanden_melt <-
 
 ```{r sample}
 # Sample van een x aantal combis. Overschrijft de volledige set. Geen sample? Dan deze chunk niet runnen.
-n_combi <- 20
+n_combi <- 5000
 row_nrs <- round(runif(n_combi, 1, length(unique(afstanden_melt$variable))), 0)
 afstanden_melt <-
   afstanden_melt %>%
@@ -55,20 +55,25 @@ ggplot(afstanden_melt, aes(x = A, y = value, color = variable)) +
 ```{r prep_network}
 # Minimale afstand met bandbreedte (percentage) in combinatie met tijdsduur wegschrijven in data frame
 
-min_afstand_tijd <- data.frame()
 bandbreedte <- .1
 
-for (i in 1:length(unique(afstanden_melt$variable))) {
-  
+fMinAfstand <- function (i) {
+  #selecteer alleen de waardes voor een specifiek paar
   selectie_i <- afstanden_melt %>% filter(variable == unique(afstanden_melt$variable)[i])
-  
+  #filter gevonden waardes op minimum plus de waardes die binnen de opgegeven bandbreedte liggen
   min_afstand_tijd_i <-
     selectie_i %>%
     filter(value <= (1 + bandbreedte) * selectie_i[which.min(selectie_i$value),4])
-
-  min_afstand_tijd <- bind_rows(min_afstand_tijd, min_afstand_tijd_i)
-  
+  return(min_afstand_tijd_i)
 }
+
+list_min_afstand_tijd<-lapply (1:length(unique(afstanden_melt$variable)), fMinAfstand)
+min_afstand_tijd<-do.call(rbind.data.frame, list_min_afstand_tijd)
+rm(min_afstand_tijd_i,list_min_afstand_tijd)
+
+#Deze code werkt voor parallel rekenen op Mac, niet voor Windowns...
+#list_min_afstand_tijd<- mclapply(1:length(unique(afstanden_melt$variable)), testf, mc.cores = getOption("mc.cores", 4L))
+#min_afstand_tijd3<-do.call(rbind.data.frame, list_min_afstand_tijd)
 
 min_afstand_tijd <-
   min_afstand_tijd %>%
@@ -95,7 +100,7 @@ min_afstand_tijd <-
 ### Voorkomen van kortste afstanden (altijd <300m)
 overzicht van voorkomen van kortste afstanden bij schepenparen
 
-```{r plot_time_dist}
+```{r hist_dist}
 ggplot(data = min_afstand_tijd, aes(x=d_min*1852)) +
   geom_histogram(binwidth = 50, colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
   xlab("Kortste afstand (in meter") +
