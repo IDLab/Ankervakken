@@ -110,7 +110,9 @@ for (i in 1:length(MMSIUniek_9d)) {
 PageShipResult$Deadweight <- as.numeric(str_sub(PageShipResult$Deadweight,1,-2))
 
 #save results
-filename <-paste0('Data/1_reading_cleaning/ShipSpecsMT','.csv')
-write.csv(PageShipResult, file = filename)
+if (FALSE) {
+  filename <-paste0('Data/1_reading_cleaning/ShipSpecsMT','.csv')
+  write.csv(PageShipResult, file = filename)
+}
 
 
