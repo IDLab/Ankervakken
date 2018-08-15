@@ -9,60 +9,55 @@ set.seed(1)
 
 # Data ophalen
 load('Data/1_reading_cleaning/afstanden_9d_combis.Rda')
+load('Data/1_reading_cleaning/ship_specs_complete.Rda')
 
-# Dataset transposen; combi's onder elkaar zetten
-afstanden_melt <- melt(afstanden_9d_combis, id.vars = c("X","A"))
-afstanden_melt <-
-  afstanden_melt %>%
-  arrange(variable, A) %>%
-  mutate(value = as.numeric(value)) %>%
-  mutate_if(is.factor,as.character)
+# Combi-variabele met beide MMSI's maken
+afstanden_9d_combis <- afstanden_9d_combis %>% mutate(MMSI_combi = paste0(MMSI1, "-", MMSI2))
 
-# Sample van een x aantal combis. Overschrijft de volledige set. Geen sample? Dan deze chunk niet runnen.
-if (TRUE) {
-  n_combi <- 50
-  row_nrs <- round(runif(n_combi, 1, length(unique(afstanden_melt$variable))), 0)
-  afstanden_melt <-
-    afstanden_melt %>%
-    filter(variable %in% unique(afstanden_melt$variable)[row_nrs])
+# Sample van een x aantal combi's. Overschrijft de volledige set. Geen sample? Dan deze chunk niet runnen.
+if (FALSE) {
+  n_combi <- 100
+  afstanden_9d_combis <-
+    afstanden_9d_combis %>%
+    sample_n(n_combi)
 }
 
 ### Tijd x afstand
 #Geeft onderlinge afstand combinaties in de tijd weer
 if (FALSE) {
-  ggplot(afstanden_melt, aes(x = A, y = value, color = variable)) +
+  ggplot(afstanden_9d_combis, aes(x = time, y = Distance, color = MMSI_combi)) +
     geom_line(size = 1, show.legend = FALSE) +
     xlab("Datum + tijd") +
     ylab("Afstand")
 }
 
 # Minimale afstand met bandbreedte (percentage) in combinatie met tijdsduur wegschrijven in data frame
-bandbreedte <- .1
+bandbreedte <- 2
 
 #functie definieren die per schipcombi de juiste data over onderlinge afstand verzameld
 fMinAfstand <- function (i) {
   #selecteer alleen de waardes voor een specifiek paar
-  selectie_i <- afstanden_melt %>% filter(variable == unique(afstanden_melt$variable)[i])
+  selectie_i <- afstanden_9d_combis %>% filter(MMSI_combi == unique(afstanden_9d_combis$MMSI_combi)[i])
   #filter gevonden waardes op minimum plus de waardes die binnen de opgegeven bandbreedte liggen
   min_afstand_tijd_i <-
     selectie_i %>%
-    filter(value <= (1 + bandbreedte) * selectie_i[which.min(selectie_i$value),4])
+    filter(Distance <= (1 + bandbreedte) * selectie_i[which.min(selectie_i$Distance),7])
   return(min_afstand_tijd_i)
 }
 
 #standaard lapply call
-if (TRUE) {
-  list_min_afstand_tijd<-lapply (1:length(unique(afstanden_melt$variable)), fMinAfstand)
+if (FALSE) {
+  list_min_afstand_tijd<-lapply (1:length(unique(afstanden_9d_combis$Distance)), fMinAfstand)
 }
 
 #Deze code is om op windows parallel te draaien
-if (FALSE) {
+if (TRUE) {
   no_cores <- detectCores()-1
   cl <- makeCluster(no_cores)
-  clusterExport (cl, "afstanden_melt")
+  clusterExport (cl, "afstanden_9d_combis")
   clusterExport (cl, "bandbreedte")
   clusterEvalQ(cl, library(dplyr))
-  list_min_afstand_tijd<-parLapply (cl, 1:length(unique(afstanden_melt$variable)), fMinAfstand)
+  list_min_afstand_tijd<-parLapply (cl, 1:length(unique(afstanden_9d_combis$Distance)), fMinAfstand)
   stopCluster(cl)
 }
 
@@ -79,25 +74,25 @@ rm(list_min_afstand_tijd)
 #kolommen delta afstand en tijd vullen
 min_afstand_tijd <-
   min_afstand_tijd %>%
-  group_by(combi = variable) %>%
-  summarise(t_start = min(A), t_eind = max(A), d_min = min(value), d_max = max(value)) %>%
+  group_by(MMSI1, MMSI2) %>%
+  summarise(t_start = min(time), t_eind = max(time), d_min = min(Distance), d_max = max(Distance)) %>%
   mutate(delta_d = d_max - d_min) %>%
   mutate(delta_t = difftime(t_eind, t_start))
 
-# Combi van scheepsnamen splitsen in twee kolommen
-min_afstand_tijd$schip_1 <-
-  sapply(min_afstand_tijd$combi,
-         function(y) substr(y, 1, regexpr("...", y, fixed = TRUE)[1] - 1))
-min_afstand_tijd$schip_2 <-
-  sapply(min_afstand_tijd$combi,
-         function(y) substr(y, regexpr("...", y, fixed = TRUE)[1] + 3, nchar(as.character(y))))
-
-# NAs niet meenemen.
+#ship specs koppelen
+S1_ship_specs_complete <- ship_specs_complete
+S2_ship_specs_complete <- ship_specs_complete
+names(S1_ship_specs_complete) <- lapply(names(S1_ship_specs_complete), function(x) paste0("S1_", x))
+names(S2_ship_specs_complete) <- lapply(names(S2_ship_specs_complete), function(x) paste0("S2_", x))
+names(S1_ship_specs_complete)[1] <- "MMSI1"
+names(S2_ship_specs_complete)[1] <- "MMSI2"
 min_afstand_tijd <-
   min_afstand_tijd %>%
-  filter(schip_1 != "nan" & schip_2 != "nan")
+  left_join(S1_ship_specs_complete, by=(c("MMSI1", "MMSI1"))) %>%
+  left_join(S2_ship_specs_complete, by=(c("MMSI2", "MMSI2")))
 
-if (FALSE) {
+#wegschrijven
+if (TRUE) {
   save (min_afstand_tijd,file="Data/1_reading_cleaning/min_afstand_tijd.Rda")
 }
 
