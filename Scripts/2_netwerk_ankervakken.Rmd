@@ -66,8 +66,8 @@ Aantal contacten per scheepstype
 ```{r}
 
 # Heatmap
-S1_Vessel.Type<- c(min_afstand_tijd$S1_Vessel.Type, min_afstand_tijd$S2_Vessel.Type)
-S2_Vessel.Type <- c(min_afstand_tijd$S2_Vessel.Type, min_afstand_tijd$S1_Vessel.Type)
+S1_Vessel.Type<- c(min_afstand_tijd$S1_Vessel.Type.sum, min_afstand_tijd$S2_Vessel.Type.sum)
+S2_Vessel.Type <- c(min_afstand_tijd$S2_Vessel.Type.sum, min_afstand_tijd$S1_Vessel.Type.sum)
 data <- as.data.frame(cbind(S1_Vessel.Type, S2_Vessel.Type))
 
 
@@ -81,8 +81,7 @@ matrix_voor_heatmap <-
 matrix_voor_heatmap[is.na(matrix_voor_heatmap)] <- 0
 matrix_voor_heatmap <-
   matrix_voor_heatmap %>%
-  filter(!(S1_Vessel.Type %in% c("Data not found", "webpage not found"))) %>%
-  select(-`Data not found`, -`webpage not found`)
+  filter(!(S1_Vessel.Type %in% c("Data not found", "webpage not found")))
 hm_input <- as.matrix(matrix_voor_heatmap[,2:length(names(matrix_voor_heatmap))])
 
 plot_ly(x = colnames(hm_input) , y = colnames(hm_input) , z = hm_input, type = "heatmap", colors = "YlOrRd")
