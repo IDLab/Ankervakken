@@ -8,6 +8,7 @@ ankervakken_2017Q1 <- read_xlsx("Bronnen/schepenankervakkenq1.xlsx", sheet="All"
 ankervakken_9d <- read.csv2("Bronnen/nieuwe data/20170401-0409.csv", sep = ",",stringsAsFactors=FALSE)
 afstanden_9d_combis <- read.csv2("Bronnen/nieuwe data/distances201704010409.csv", sep = ",", stringsAsFactors=FALSE)
 ship_features <- read.csv2("Bronnen/Dataset Patrick.csv", sep = ",", stringsAsFactors=FALSE)
+ship_type_summary <- read.csv2("Bronnen/ShipTypeSummary.csv", sep = ",", stringsAsFactors=FALSE, header=FALSE)
 
 # Corrigeren voor inlezen als Date Time
 afstanden_9d_combis$time <- as.POSIXct(afstanden_9d_combis$time)
@@ -39,6 +40,7 @@ save(ankervakken_2017Q1, file="Data/1_reading_cleaning/ankervakken_2017Q1.Rda")
 save(ankervakken_9d, file="Data/1_reading_cleaning/ankervakken_9d.Rda")
 save(afstanden_9d_combis, file="Data/1_reading_cleaning/afstanden_9d_combis.Rda")
 save(ship_features, file="Data/1_reading_cleaning/ship_features.Rda")
+save(ship_type_summary, file="Data/1_reading_cleaning/ship_type_summary.Rda")
 
 # Ankervakken 9 dagen uniek maken op combinatie schip X dag (voor visualisatie in de tijd)
 ankervakken_9d_schip_X_dag <-

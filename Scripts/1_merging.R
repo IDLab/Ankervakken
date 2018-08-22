@@ -4,6 +4,7 @@ library(dplyr)
 # Load data
 load("Data/1_reading_cleaning/ankervakken_9d_uniek_schip.Rda")
 load("Data/1_reading_cleaning/ship_features.Rda")
+load("Data/1_reading_cleaning/ship_type_summary.Rda")
 ship_specs_mt <- read.csv2("Data/1_reading_cleaning/ShipSpecsMT.csv", sep = ",", stringsAsFactors=FALSE)
 
 # Make files mergeable
@@ -52,6 +53,12 @@ ship_specs_complete <-
 ship_specs_complete$Flag <-
   sapply(ship_specs_complete$Flag,
          function(y) substr(y, regexpr("[", y, fixed = TRUE)[1] + 1, regexpr("[", y, fixed = TRUE)[1] + 2))
+
+# Add grouped ship type categories
+ship_type_summary <- ship_type_summary %>% rename(Vessel.Type = V1, Vessel.Type.sum = V2)
+ship_specs_complete <-
+  ship_specs_complete %>%
+  left_join(ship_type_summary, by = c("Vessel.Type", "Vessel.Type"))
 
 # Delete redundant variables
 ship_specs_complete <-
