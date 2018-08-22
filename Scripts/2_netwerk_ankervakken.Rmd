@@ -21,8 +21,9 @@ load ("../Data/1_reading_cleaning/min_afstand_tijd.Rda")
 
 ggplot(data = min_afstand_tijd, aes(x=d_min*1852)) +
   geom_histogram(binwidth = 10, colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
-  xlab("Kortste afstand (in meter") +
-  ylab("Aantal")
+  xlab("Kortste afstand (in meters)") +
+  ylab("Aantal paren") +
+  ggtitle("Aantal paren naar kortste onderlinge afstand")
 
 ```
 ### Tijdsduur van contact
@@ -30,24 +31,38 @@ overzicht van welke tijdsduur schepen binnen 'bandbreedte' van afstand bij elkaa
 
 ```{r hist_time}
 ggplot(data = subset(min_afstand_tijd, delta_t >0), aes(x=delta_t/3600)) +
-  geom_histogram(binwidth = 0.1, colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
-  xlab("contact tijd (in uren)") +
-  ylab("Aantal paren")
+  geom_histogram(binwidth = 10, colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
+  xlab("Contacttijd (in uren)") +
+  ylab("Aantal paren") +
+  ggtitle("Aantal paren naar tijdsduur contact (versie 1)")
 
 ```
+
+```{r hist_time}
+ggplot(data = subset(min_afstand_tijd, delta_t >0), aes(x=delta_t/3600)) +
+  geom_histogram(binwidth = 0.1, colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
+  xlab("Contacttijd (in uren)") +
+  ylab("Aantal paren") +
+  ggtitle("Aantal paren naar tijdsduur contact (versie 2)")
+
+```
+
+
 ### Tijdsduur van contact vs afstand
 overzicht van welke tijdsduur schepen binnen 'bandbreedte' van afstand bij elkaar in de buurt zijn
 
 ```{r time_dist}
 ggplot(data = subset(min_afstand_tijd, delta_t >0), aes(x=delta_t/3600, y = d_min*1852)) +
   geom_point(colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
-  xlab("contact tijd (in uren") +
-  ylab("kortste onderlinge afstand")
+  xlab("Contacttijd (in uren)") +
+  ylab("Kortste onderlinge afstand (in meters)") +
+  ggtitle("Tijdsduur contact versus kortste onderlinge afstand per paar")
 
 ```
 
 ### Heatmap scheepstypen
 
+Aantal contacten per scheepstype
 ```{r}
 
 # Heatmap
@@ -58,39 +73,22 @@ data <- as.data.frame(cbind(S1_Vessel.Type, S2_Vessel.Type))
 
 matrix_voor_heatmap <-
   data %>%
-  filter(!(S1_Vessel.Type %in% c("Data not found", "webpage not found", "NA"))) %>%
-  filter(!(S2_Vessel.Type %in% c("Data not found", "webpage not found", "NA")))
+  filter(!is.na(S1_Vessel.Type)) %>%
+  filter(!is.na(S2_Vessel.Type))
 matrix_voor_heatmap <-
   matrix_voor_heatmap %>%
   dcast(S1_Vessel.Type ~ S2_Vessel.Type, fun.aggregate = length, drop = FALSE)
 matrix_voor_heatmap[is.na(matrix_voor_heatmap)] <- 0
-hm_input <- as.matrix(matrix_voor_heatmap[,2:length(names(matrix_voor_heatmap))])
-
- plot_ly(x = colnames(hm_input) , y = colnames(hm_input) , z = hm_input, type = "heatmap")
-plot_ly(z = hm_input, type = "heatmap")
-```
-
-```{r}
-
-# Heatmap
-S1_Length<- c(min_afstand_tijd$S1_Length, min_afstand_tijd$S2_Length)
-S2_Length <- c(min_afstand_tijd$S2_Length, min_afstand_tijd$S1_Length)
-data <- as.data.frame(cbind(S1_Length, S2_Length))
-
-
-matrix_voor_heatmap <-
-  data %>%
-  filter(!(S1_Length %in% c("Data not found", "webpage not found", "NA"))) %>%
-  filter(!(S2_Length %in% c("Data not found", "webpage not found", "NA")))
 matrix_voor_heatmap <-
   matrix_voor_heatmap %>%
-  dcast(S1_Length ~ S2_Length, fun.aggregate = length, drop = FALSE)
-matrix_voor_heatmap[is.na(matrix_voor_heatmap)] <- 0
+  filter(!(S1_Vessel.Type %in% c("Data not found", "webpage not found"))) %>%
+  select(-`Data not found`, -`webpage not found`)
 hm_input <- as.matrix(matrix_voor_heatmap[,2:length(names(matrix_voor_heatmap))])
 
- plot_ly( z = hm_input, type = "heatmap")
+plot_ly(x = colnames(hm_input) , y = colnames(hm_input) , z = hm_input, type = "heatmap", colors = "YlOrRd")
 
 ```
+
 
 ### Netwerk onderlinge afstand schepen
 Let op: dikte lijn en NIET lengte representeert afstand (verwarrend...)
@@ -110,7 +108,7 @@ adj_matrix <- ftM2adjM(as.matrix(data_netwerk[,1:2]), W=data_netwerk$d_min)
 netwerk_input <- network(adj_matrix, directed=FALSE)
 
 # Edge size bepalen
-edgesize <- mean(data_netwerk$d_min) / data_netwerk$d_min
+#edgesize <- mean(data_netwerk$d_min) / data_netwerk$d_min
 edgesize <- (data_netwerk$d_min/(300/1852))*2
 
 # Netwerk visualiseren
@@ -118,7 +116,7 @@ ggnet2(
   netwerk_input,
   node.color = "blue",
   node.size = 5,
-  edge.size = edgesize,
+  #edge.size = edgesize,
   edge.color = "lightblue",
   label = TRUE,
   label.size = 1
