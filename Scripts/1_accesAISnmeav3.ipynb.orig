@@ -1,0 +1,648 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "__author__ = 'Dennis Strik'\n",
+    "\n",
+    "#Import of different libraries\n",
+    "import matplotlib.pyplot as plt\n",
+    "plt.style.use('bmh')\n",
+    "\n",
+    "import matplotlib.lines as mlines\n",
+    "from shapely.geometry import Polygon #Module for manipulation and analysis of geometric objects in the Cartesian plane.\n",
+    "import pandas as pd #This module provides high-performance, easy-to-use data structures and data analysis tools for Python\n",
+    "from shapely.geometry import Point #The Point constructor takes positional coordinate values or point tuple parameters to create a single point.\n",
+    "import numpy as np\n",
+    "from geopy import distance\n",
+    "\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Specify the file location here\n",
+    "filename1 = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\db_20170401_00-00_20170409_23-59_int_30.csv.zip'\n",
+    "filename2 = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\db_20170410_00-00_20170419_23-59_int_30.csv.zip'\n",
+    "filename3 = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\db_20170420_00-00_20170430_23-59_int_30.csv.zip'\n",
+    "filename4 = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\db_20170501_00-00_20170531_23-59_int_30.csv.zip'\n",
+    "filename5 = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\db_20170601_00-00_20170630_23-59_int_30.csv' #LET OP, werkt niet op gezipt bestand!\n",
+    "df1 = pd.read_csv(filename1, nrows=100000)\n",
+    "df2 = pd.read_csv(filename2, nrows=100000)\n",
+    "df3 = pd.read_csv(filename3, nrows=100000)\n",
+    "df4 = pd.read_csv(filename4, nrows=100000)\n",
+    "df5 = pd.read_csv(filename5, nrows=100000)\n",
+    "\n",
+    "df = df1.append([df2, df3, df4, df5])\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>SystemID</th>\n",
+       "      <th>Name</th>\n",
+       "      <th>Lat</th>\n",
+       "      <th>Lon</th>\n",
+       "      <th>IMO</th>\n",
+       "      <th>MMSI</th>\n",
+       "      <th>Schiptype</th>\n",
+       "      <th>Destination</th>\n",
+       "      <th>Speed</th>\n",
+       "      <th>Heading</th>\n",
+       "      <th>Length</th>\n",
+       "      <th>NavStatus</th>\n",
+       "      <th>Starttime</th>\n",
+       "      <th>Updatetime</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>2017033110542822342</td>\n",
+       "      <td>ATLANTIC STAR</td>\n",
+       "      <td>54.168641</td>\n",
+       "      <td>5.218501</td>\n",
+       "      <td>9670573.0</td>\n",
+       "      <td>235112573.0</td>\n",
+       "      <td>70.0</td>\n",
+       "      <td>GOTHENBURG</td>\n",
+       "      <td>9.2</td>\n",
+       "      <td>28.2</td>\n",
+       "      <td>296.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>2017-03-31 10:54:28.081</td>\n",
+       "      <td>2017-04-01 00:00:00.01</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2017033113524624373</td>\n",
+       "      <td>ADVANCE VICTORIA</td>\n",
+       "      <td>54.652343</td>\n",
+       "      <td>5.158960</td>\n",
+       "      <td>9321160.0</td>\n",
+       "      <td>309827000.0</td>\n",
+       "      <td>80.0</td>\n",
+       "      <td>DK SKA</td>\n",
+       "      <td>7.1</td>\n",
+       "      <td>28.1</td>\n",
+       "      <td>228.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>2017-03-31 13:52:46.084</td>\n",
+       "      <td>2017-04-01 00:00:00.01</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2017033115202018574</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>53.264877</td>\n",
+       "      <td>5.131646</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>0.2</td>\n",
+       "      <td>137.2</td>\n",
+       "      <td>4.4</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>2017-03-31 15:20:20.514</td>\n",
+       "      <td>2017-04-01 00:00:00.01</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>2017033116031808731</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>53.224253</td>\n",
+       "      <td>5.204229</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>0.3</td>\n",
+       "      <td>72.4</td>\n",
+       "      <td>60.9</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>2017-03-31 16:03:18.012</td>\n",
+       "      <td>2017-04-01 00:00:00.01</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>2017033118175123110</td>\n",
+       "      <td>MSC MARIANNA</td>\n",
+       "      <td>53.597917</td>\n",
+       "      <td>5.148714</td>\n",
+       "      <td>9226920.0</td>\n",
+       "      <td>352335000.0</td>\n",
+       "      <td>70.0</td>\n",
+       "      <td>ANTWERP</td>\n",
+       "      <td>5.2</td>\n",
+       "      <td>252.9</td>\n",
+       "      <td>344.4</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>2017-03-31 18:17:51.513</td>\n",
+       "      <td>2017-04-01 00:00:00.01</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "              SystemID              Name        Lat       Lon        IMO  \\\n",
+       "0  2017033110542822342     ATLANTIC STAR  54.168641  5.218501  9670573.0   \n",
+       "1  2017033113524624373  ADVANCE VICTORIA  54.652343  5.158960  9321160.0   \n",
+       "2  2017033115202018574               NaN  53.264877  5.131646        NaN   \n",
+       "3  2017033116031808731               NaN  53.224253  5.204229        NaN   \n",
+       "4  2017033118175123110      MSC MARIANNA  53.597917  5.148714  9226920.0   \n",
+       "\n",
+       "          MMSI  Schiptype Destination  Speed  Heading  Length  NavStatus  \\\n",
+       "0  235112573.0       70.0  GOTHENBURG    9.2     28.2   296.0        0.0   \n",
+       "1  309827000.0       80.0      DK SKA    7.1     28.1   228.0        0.0   \n",
+       "2          NaN        NaN         NaN    0.2    137.2     4.4        NaN   \n",
+       "3          NaN        NaN         NaN    0.3     72.4    60.9        NaN   \n",
+       "4  352335000.0       70.0     ANTWERP    5.2    252.9   344.4        0.0   \n",
+       "\n",
+       "                 Starttime              Updatetime  \n",
+       "0  2017-03-31 10:54:28.081  2017-04-01 00:00:00.01  \n",
+       "1  2017-03-31 13:52:46.084  2017-04-01 00:00:00.01  \n",
+       "2  2017-03-31 15:20:20.514  2017-04-01 00:00:00.01  \n",
+       "3  2017-03-31 16:03:18.012  2017-04-01 00:00:00.01  \n",
+       "4  2017-03-31 18:17:51.513  2017-04-01 00:00:00.01  "
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Creation of a new dataframe df_new without the less relevant columns\n",
+    "systemID = df.iloc[:,0:1]\n",
+    "name_lat_long = df.iloc[:,6:9]\n",
+    "imo = df.iloc[:,33:34]\n",
+    "t_init = df.iloc[:,1:2]\n",
+    "t_update = df.iloc[:,2:3]\n",
+    "mmsi = df.iloc[:,5:6]\n",
+    "ves = df.iloc[:,40:41]\n",
+    "des = df.iloc[:,30:31]\n",
+    "speed = df.iloc[:,20:21]\n",
+    "heading = df.iloc[:,21:22]\n",
+    "length = df.iloc[:,11:12]\n",
+    "navstatus = df.iloc[:,14:15]\n",
+    "\n",
+    "df_new = pd.concat([systemID, name_lat_long, imo, mmsi, ves, des, speed, heading, length, navstatus ,t_init, t_update, ],axis=1)\n",
+    "df_new.columns = ['SystemID', 'Name', 'Lat', 'Lon', 'IMO', 'MMSI', 'Schiptype', 'Destination', 'Speed', 'Heading', 'Length', \"NavStatus\", 'Starttime', 'Updatetime']\n",
+    "df_new.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Cleanin, removal of MMSI without a number and change the datetime columns in datetime format.\n",
+    "df_new = df_new[np.isfinite(df_new['MMSI'])]\n",
+    "df_new['Starttime'] = df_new['Starttime'].astype('datetime64[ns]')\n",
+    "df_new['Updatetime'] = df_new['Updatetime'].astype('datetime64[ns]')\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2017-04-01 00:00:00.010000 2017-06-01 00:20:32.338000\n"
+     ]
+    }
+   ],
+   "source": [
+    "mintime = min(df_new['Updatetime'])\n",
+    "maxtime = max(df_new['Updatetime'])\n",
+    "print(mintime, maxtime) "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Creation of the polygon of the Ankervakken and put them in an array for iteration.\n",
+    "Ankervak1 = ('Ankervak1', Polygon([(2.754580,52.134195),(2.868095, 52.134758),(2.774023, 52.067847), (2.710605,52.065838), (2.713578,52.099202)]))\n",
+    "Ankervak2 = ('Ankervak2', Polygon([(2.860076,51.918421),(2.921510,51.942252),(3.001128,51.949211),(2.877470,51.901307)]))\n",
+    "Ankervak3N = ('Ankervak3N', Polygon([(3.139327,52.017562),(3.209322,52.021018),(3.231510,51.998010),(3.137953,51.990032)]))\n",
+    "Ankervak3S = ('Ankervak3S', Polygon([(3.131148,51.948142),(3.225792,51.956233),(3.204232,51.927322),(3.125773,51.917598)]))\n",
+    "Ankervak3E = ('Ankervak3E', Polygon([(3.455220,52.031497),(3.556038,52.035870),(3.558498,52.009482),(3.450245,52.000552)]))\n",
+    "Ankervak4W = ('Ankervak4W', Polygon([(3.404835,51.901690),(3.629159,51.944325),(3.643326,51.916664),(3.412613,51.874399)]))\n",
+    "Ankervak4E = ('Ankervak4E', Polygon([(3699690,51.953512),(3812517,51.959837),(3818178,51.921983),(3705352,51.915653)]))\n",
+    "Ankervak5 = ('Ankervak5', Polygon([(3.544315,52.182028),(3.746525,52.181712),(3.744408,52.118780),(3.637528,52.118217),(3.543915,52.151260)]))\n",
+    "Ankervak6 = ('Ankervak6', Polygon([(3.725538,52.459422),(3.824412,52.467875),(3.817720,52.447125),(3.730055,52.439647)]))\n",
+    "Ankervak7 = ('Ankervak7', Polygon([(3.907160,52.425455),(3.958340,52.442512),(4.149455,52.471437),(4.158833,52.458130),(4.034970,52.438108),(4.019700,52.422518),(3.904643,52.417658)]))\n",
+    "Ankervak8 = ('Ankervak8', Polygon([(4.206183,52.540493),(4.339370,52.527555),(4.356640,52.506660),(4.220823,52.522498)]))\n",
+    "\n",
+    "Ankervak_Schouwenbank = ('AnkervakSchouwenbank', Polygon([(03.278667,51.770848),(03.305343,51.744172),(03.4065,51.800500),(03.395935,51.837335)])) #Creating a Polygon.)\n",
+    "Ankervak_ScheveningenA = ('AnkervakScheveningenA', Polygon([(4.223682,52.215868),(4.257022,52.194190),(4.218650,52.165855),(4.195318,52.196720)]))\n",
+    "Ankervak_ScheveningenB = ('AnkervakScheveningenB', Polygon([(4.253992,52.134195),(4.260682,52.125855),(4.247015,52.121877),(4.242040,52.131697)]))\n",
+    "\n",
+    "Ankervakken = [Ankervak1, Ankervak2, Ankervak3N, Ankervak3S, Ankervak3E, Ankervak4E, Ankervak4W, Ankervak5, Ankervak6, \\\n",
+    "               Ankervak7, Ankervak8, Ankervak_Schouwenbank, Ankervak_ScheveningenA, Ankervak_ScheveningenB]\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Temporal dictionary to store the relvant rows for every column\n",
+    "SchepeninAnkervakkenrows = dict()\n",
+    "for avak in Ankervakken:\n",
+    "    SchepeninAnkervakkenrows[avak[0]]= []\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "for n in range(0, len(df_new)):\n",
+    "    la = df_new.iloc[n,2]\n",
+    "    lo = df_new.iloc[n,3]\n",
+    "    coordAsPoint = Point(lo, la)\n",
+    "    for avak in Ankervakken:\n",
+    "        if(avak[1].contains(coordAsPoint)):\n",
+    "            SchepeninAnkervakkenrows[avak[0]].append(n)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:2: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "  \n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:4: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "  after removing the cwd from sys.path.\n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:6: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "  \n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:8: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "  \n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:10: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "  # Remove the CWD from sys.path while we load stuff.\n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:14: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "  \n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:16: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "  app.launch_new_instance()\n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:18: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:20: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:22: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:24: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:26: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n",
+      "C:\\Users\\pmerkx\\Anaconda3\\lib\\site-packages\\ipykernel_launcher.py:28: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy\n"
+     ]
+    }
+   ],
+   "source": [
+    "Ankervak1df = df_new.iloc[SchepeninAnkervakkenrows['Ankervak1']]\n",
+    "Ankervak1df['ankervak'] = '1'\n",
+    "Ankervak2df = df_new.iloc[SchepeninAnkervakkenrows['Ankervak2']]\n",
+    "Ankervak2df['ankervak'] = '2'\n",
+    "Ankervak3Ndf = df_new.iloc[SchepeninAnkervakkenrows['Ankervak3N']]\n",
+    "Ankervak3Ndf['ankervak'] = '3N'\n",
+    "Ankervak3Sdf = df_new.iloc[SchepeninAnkervakkenrows['Ankervak3S']]\n",
+    "Ankervak3Sdf['ankervak'] = '3S'\n",
+    "Ankervak3Edf = df_new.iloc[SchepeninAnkervakkenrows['Ankervak3E']]\n",
+    "Ankervak3Edf['ankervak'] = '3E'\n",
+    "Ankervak4Edf = df_new.iloc[SchepeninAnkervakkenrows['Ankervak4E']]\n",
+    "Ankervak4Edf['ankervak'] = '4E'\n",
+    "Ankervak4Wdf = df_new.iloc[SchepeninAnkervakkenrows['Ankervak4W']]\n",
+    "Ankervak4Wdf['ankervak'] = '4W'\n",
+    "Ankervak5df = df_new.iloc[SchepeninAnkervakkenrows['Ankervak5']]\n",
+    "Ankervak5df['ankervak'] = '5'\n",
+    "Ankervak6df = df_new.iloc[SchepeninAnkervakkenrows['Ankervak6']]\n",
+    "Ankervak6df['ankervak'] = '6'\n",
+    "Ankervak7df = df_new.iloc[SchepeninAnkervakkenrows['Ankervak7']]\n",
+    "Ankervak7df['ankervak'] = '7'\n",
+    "Ankervak8df = df_new.iloc[SchepeninAnkervakkenrows['Ankervak8']]\n",
+    "Ankervak8df['ankervak'] = '8'\n",
+    "Ankervak_Schouwenbankdf = df_new.iloc[SchepeninAnkervakkenrows['AnkervakSchouwenbank']]\n",
+    "Ankervak_Schouwenbankdf['ankervak'] = 'Schouwenbank'\n",
+    "Ankervak_ScheveningenAdf = df_new.iloc[SchepeninAnkervakkenrows['AnkervakScheveningenA']]\n",
+    "Ankervak_ScheveningenAdf['ankervak'] = 'ScheveningenA'\n",
+    "Ankervak_ScheveningenBdf = df_new.iloc[SchepeninAnkervakkenrows['AnkervakScheveningenB']]\n",
+    "Ankervak_ScheveningenBdf['ankervak'] = 'ScheveningenB'\n",
+    "AVAKDFS = [Ankervak1df, Ankervak2df, Ankervak3Ndf, Ankervak3Edf, Ankervak3Sdf, Ankervak4Edf, Ankervak4Wdf, Ankervak5df, \\\n",
+    "    Ankervak6df, Ankervak6df, Ankervak8df, Ankervak_Schouwenbankdf, Ankervak_ScheveningenAdf, Ankervak_ScheveningenBdf]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "AllSchipinankervak = pd.DataFrame()\n",
+    "for dframe in AVAKDFS:\n",
+    "    AllSchipinankervak= AllSchipinankervak.append(dframe)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "D:\\Projecten\\Ankervakken\\Bronnen\\20170401-0630.csv\n"
+     ]
+    }
+   ],
+   "source": [
+    "#writefilename0 = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\'+ '20170401-0409.csv'\n",
+    "#writefilename1 = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\'+ '20170410-0419.csv'\n",
+    "#writefilename2 = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\'+ '20170420-0430.csv'\n",
+    "#writefilename3 = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\'+ '20170501-0531.csv'\n",
+    "#writefilename4 = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\'+ '20170601-0630.csv'\n",
+    "writefilename = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\'+ '20170401-0630.csv'\n",
+    "print(writefilename)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "AllSchipinankervak.to_csv(writefilename)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "4\n",
+      "8\n",
+      "5\n",
+      "2\n",
+      "6\n",
+      "0\n",
+      "40\n",
+      "90\n",
+      "1\n",
+      "1\n",
+      "10\n",
+      "92\n",
+      "14\n",
+      "1\n"
+     ]
+    }
+   ],
+   "source": [
+    "for adf in AVAKDFS:\n",
+    "    length = len(adf.MMSI.unique())\n",
+    "    print(length)\n",
+    "    \n",
+    "  # Ankervak1df,4\n",
+    "  # Ankervak2df, 7\\\n",
+    "  # Ankervak3Ndf, 1\\\n",
+    "  # Ankervak3Edf, 2\\\n",
+    "  # Ankervak3Sdf, 0\\\n",
+    "  # Ankervak4Edf, 0\\\n",
+    "  # Ankervak4Wdf, 18\\\n",
+    "  # Ankervak5df, 28\\\n",
+    "  # Ankervak6df, 5\\\n",
+    "  # Ankervak6df, 5\\\n",
+    "  # Ankervak8df, 10\\\n",
+    "  # Ankervak_Schouwenbankdf, 34\\\n",
+    "  # Ankervak_ScheveningenAdf, 4\\\n",
+    "  # Ankervak_ScheveningenBdf  6\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "ename": "ValueError",
+     "evalue": "min() arg is an empty sequence",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[1;31mValueError\u001b[0m                                Traceback (most recent call last)",
+      "\u001b[1;32m<ipython-input-20-dde251ae292e>\u001b[0m in \u001b[0;36m<module>\u001b[1;34m()\u001b[0m\n\u001b[0;32m     41\u001b[0m                         \u001b[0mresultTemp\u001b[0m \u001b[1;33m=\u001b[0m \u001b[0mresultTemp\u001b[0m\u001b[1;33m.\u001b[0m\u001b[0mappend\u001b[0m\u001b[1;33m(\u001b[0m\u001b[0mline\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mignore_index\u001b[0m \u001b[1;33m=\u001b[0m \u001b[1;32mTrue\u001b[0m\u001b[1;33m)\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0;32m     42\u001b[0m \u001b[1;33m\u001b[0m\u001b[0m\n\u001b[1;32m---> 43\u001b[1;33m                 \u001b[1;32mif\u001b[0m \u001b[0mmin\u001b[0m\u001b[1;33m(\u001b[0m\u001b[0mdistances\u001b[0m\u001b[1;33m)\u001b[0m \u001b[1;33m<\u001b[0m \u001b[1;36m0.0001\u001b[0m\u001b[1;33m:\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0m\u001b[0;32m     44\u001b[0m \u001b[1;31m#                     resultTemp.plot('time', 'Distance', title = name1[0] + ' - '+ name2[0]\u001b[0m\u001b[1;33m\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0;32m     45\u001b[0m                     \u001b[0mdfresult\u001b[0m \u001b[1;33m=\u001b[0m \u001b[0mpd\u001b[0m\u001b[1;33m.\u001b[0m\u001b[0mconcat\u001b[0m\u001b[1;33m(\u001b[0m\u001b[1;33m[\u001b[0m\u001b[0mdfresult\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mresultTemp\u001b[0m\u001b[1;33m]\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0maxis\u001b[0m \u001b[1;33m=\u001b[0m \u001b[1;36m0\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mignore_index\u001b[0m \u001b[1;33m=\u001b[0m \u001b[1;32mTrue\u001b[0m\u001b[1;33m)\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n",
+      "\u001b[1;31mValueError\u001b[0m: min() arg is an empty sequence"
+     ]
+    }
+   ],
+   "source": [
+    "#creation of time range\n",
+    "prng = pd.date_range('4/01/2017 00:00:00', '4/01/2017 01:05:00', freq='5T').tolist()\n",
+    "idx = [np.random.randn(len(prng))]\n",
+    "dftimes = pd.DataFrame(prng, columns=['A'], index=idx)\n",
+    "dftimes['A'] = dftimes['A'].astype('datetime64[ns]')\n",
+    "\n",
+    "dfresult = pd.DataFrame()\n",
+    "\n",
+    "\n",
+    "for df_out in AVAKDFS:\n",
+    "    mmsi = df_out['MMSI'].unique()\n",
+    "    mmsiDone = set()\n",
+    "    for mnum1 in mmsi:\n",
+    "        df_temp1 = df_out[df_out['MMSI']==mnum1]\n",
+    "        df_new1 = pd.merge_asof(dftimes, df_temp1, left_on = 'A' , right_on='Updatetime', direction='nearest', tolerance=pd.Timedelta('20m'))\n",
+    "        dist_to_vessels = dict()\n",
+    "        dist_to_vessels[mnum1] = dftimes.copy()\n",
+    "        name1 =  df_new1['Name'].unique()\n",
+    "        mmsiDone.add(mnum1)\n",
+    "        \n",
+    "        for mnum2 in mmsi:\n",
+    "            if mnum2 == mnum1:\n",
+    "                continue\n",
+    "            if mnum2 in mmsiDone:\n",
+    "                continue\n",
+    "            else:\n",
+    "                df_temp2 = df_out[df_out['MMSI']==mnum2]\n",
+    "                df_new2 = pd.merge_asof(dftimes, df_temp2, left_on = 'A' , right_on='Updatetime', direction='nearest', tolerance=pd.Timedelta('20m'))\n",
+    "                clms = ['time', 'Name1', 'MMSI1', 'Name2', 'MMSI2', 'Distance', 'Ankervak']\n",
+    "                resultTemp = pd.DataFrame(columns= clms)\n",
+    "                distances = []\n",
+    "                name2 = df_new2['Name'].unique()\n",
+    "\n",
+    "                for i in range(len(dftimes)):\n",
+    "                    if np.isfinite([df_new1['Lat'][i], df_new1['Lon'][i], df_new2['Lat'][i], df_new2['Lon'][i]]).all():\n",
+    "                        point1 = (df_new1['Lat'][i], df_new1['Lon'][i])\n",
+    "                        point2 = (df_new2['Lat'][i], df_new2['Lon'][i])\n",
+    "                        dist = distance.geodesic(point1, point2).nautical\n",
+    "                        distances.append(dist)\n",
+    "                        line = {'time': df_new1['A'][i], 'Name1': name1[0], 'MMSI1':mnum1, 'Name2': name2[0],\\\n",
+    "                                          'MMSI2': mnum2 ,'Distance': dist, 'Ankervak': df_new1['ankervak'][i] }\n",
+    "                        resultTemp = resultTemp.append(line, ignore_index = True)\n",
+    "                        \n",
+    "                if min(distances) < 0.4:\n",
+    "#                     resultTemp.plot('time', 'Distance', title = name1[0] + ' - '+ name2[0]\n",
+    "                    dfresult = pd.concat([dfresult, resultTemp], axis = 0, ignore_index = True)\n",
+    "                               \n",
+    "\n",
+    "# plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "writefilename_dist = 'D:\\\\Projecten\\\\Ankervakken\\\\Bronnen\\\\'+ 'distances201704010630.csv'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "dfresult.to_csv(writefilename_dist)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+<<<<<<< HEAD
+   "version": "3.6.5"
+=======
+   "version": "3.5.5"
+>>>>>>> f133d1de893e9dd343844cc5d0c3082fbcb4a414
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}
