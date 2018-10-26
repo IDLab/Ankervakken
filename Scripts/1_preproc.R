@@ -16,7 +16,7 @@ afstanden_9d_combis <- afstanden_9d_combis %>% mutate(MMSI_combi = paste0(MMSI1,
 
 # Sample van een x aantal combi's. Overschrijft de volledige set. Geen sample? Dan deze chunk niet runnen.
 if (FALSE) {
-  n_combi <- 100
+  n_combi <- 100000
   afstanden_9d_combis <-
     afstanden_9d_combis %>%
     sample_n(n_combi)
@@ -51,7 +51,7 @@ if (FALSE) {
 }
 
 #Deze code is om op windows parallel te draaien
-if (TRUE) {
+if (FALSE) {
   no_cores <- detectCores()-1
   cl <- makeCluster(no_cores)
   clusterExport (cl, "afstanden_9d_combis")
@@ -61,9 +61,9 @@ if (TRUE) {
   stopCluster(cl)
 }
 
-#Deze code werkt voor parallel rekenen op Mac, niet voor Windowns...
-if (FALSE) {
-  list_min_afstand_tijd<- mclapply(1:length(unique(afstanden_melt$variable)), testf, mc.cores = getOption("mc.cores", 4L))
+#Deze code werkt voor parallel rekenen op Mac, niet voor Windowns
+if (TRUE) {
+  list_min_afstand_tijd<- mclapply(1:length(unique(afstanden_9d_combis$Distance)), testf, mc.cores = getOption("mc.cores", 4L))
 }
 
 #lijst converteren naar dataframe
@@ -92,7 +92,7 @@ min_afstand_tijd <-
   left_join(S2_ship_specs_complete, by=(c("MMSI2", "MMSI2")))
 
 #wegschrijven
-if (TRUE) {
+if (FALSE) {
   save (min_afstand_tijd,file="Data/1_reading_cleaning/min_afstand_tijd.Rda")
 }
 

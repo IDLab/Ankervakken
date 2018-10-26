@@ -38,7 +38,7 @@ ggplot(data = subset(min_afstand_tijd, delta_t >0), aes(x=delta_t/3600)) +
 
 ```
 
-```{r hist_time}
+```{r hist_time2}
 ggplot(data = subset(min_afstand_tijd, delta_t >0), aes(x=delta_t/3600)) +
   geom_histogram(binwidth = 0.1, colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
   xlab("Contacttijd (in uren)") +
@@ -113,10 +113,11 @@ edgesize <- (data_netwerk$d_min/(300/1852))*2
 # Netwerk visualiseren
 ggnet2(
   netwerk_input,
-  node.color = "blue",
-  node.size = 5,
+  node.color = "green",
+  node.size = 4,
   #edge.size = edgesize,
-  edge.color = "lightblue",
+  edge.color = "lightgreen",
+  edge.size = 1,
   label = TRUE,
   label.size = 1
 )
