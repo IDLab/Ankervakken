@@ -16,7 +16,7 @@ afstanden_9d_combis <- afstanden_9d_combis %>% mutate(MMSI_combi = paste0(MMSI1,
 
 # Sample van een x aantal combi's. Overschrijft de volledige set. Geen sample? Dan deze chunk niet runnen.
 if (FALSE) {
-  n_combi <- 100000
+  n_combi <- 10000
   afstanden_9d_combis <-
     afstanden_9d_combis %>%
     sample_n(n_combi)
@@ -63,7 +63,7 @@ if (FALSE) {
 
 #Deze code werkt voor parallel rekenen op Mac, niet voor Windowns
 if (TRUE) {
-  list_min_afstand_tijd<- mclapply(1:length(unique(afstanden_9d_combis$Distance)), testf, mc.cores = getOption("mc.cores", 4L))
+  list_min_afstand_tijd<- mclapply(1:length(unique(afstanden_9d_combis$Distance)), fMinAfstand, mc.cores = getOption("mc.cores", 4L))
 }
 
 #lijst converteren naar dataframe
