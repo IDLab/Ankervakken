@@ -1,9 +1,9 @@
 ---
-title: "2_netwerk_ankervakken"
+title: "Wie-met-Wie in de ankervakken"
 output: html_document
 ---
 
-``` {r load_packages}
+``` {r load_packages, echo = FALSE, message = FALSE, warning = FALSE}
 library (ggplot2)
 library (graph)
 library (network)
@@ -13,10 +13,43 @@ library (plotly)
 library (reshape2)
 
 ```
-### Voorkomen van kortste afstanden (altijd <300m)
-overzicht van voorkomen van kortste afstanden bij schepenparen
+#CONCEPT!
 
-```{r hist_dist}
+#Eerste verkenning van samenkomen van schepen in ankervakken
+** Auteurs: Paul Merkx(ILT), Jasper van Vliet(ILT), Jan Zegers(MinDef/Kustwacht). **
+
+Dit is een analyse van samenkomen van schepen in Nederlandse ankervakken. Het is vooral een eerste verkenning om te bezien óf het kan, wát er dan kan en wat je zoal aan informatie uit AIS gegevens kan halen.
+
+Deze eerste resultaten brengen we nu naar buiten om te laten zien dát het kan, en uit te nodigen om het gesprek aan te gaan welke onderdelen interessant zijn.
+
+Belangrijk blijft het hierbij om te beseffen dat er twee route voorliggen. 1. Op basis van expertkennis en verwachtingen de patronen definieren die als  interessant worden aangemerkt. 2. De data zelf te laten spreken zonder keuzes vooraf. Vergelijken van deze twee routes geeft (naar onze ervaring) een goede kans op 'verwonderpunten'. Zaken die vanuit de data opvallen en kunnen leiden tot daadwerkelijk nieuwe inzichten.
+
+Vanuit oogpunt van rekentijd is een periode van 9 dagen in dit document verwerkt, er wordt gewerkt aan een uitbreiding hiervan. Denk hierbij aan vele uren rekentijd op krachtige computers.
+
+Het ontdekken van wat er gebeurd in onze ankervakken staat met deze eerste vijf plaatjes pas aan het begin. We kijken nog lang niet naar alle mogelijkheden van de AIS gegevens, en we weten natuurlijk vaak veel meer over die schepen...
+
+Op het moment dat twee schepen tegelijkertijd in hetzelfde ankervak zijn, vormen zij een 'paar'.
+Om de rekentijd een beetje binnen de perken te houden is er op dit moment gefilterd op paren die maximaal 750 meter (0.4 NM)
+Er zijn dan 460 paren van schepen, waarbij elk paar haar eigen eigenschappen heeft. In de volgende  figuren gaan in we op de eigenschappen van deze paren
+
+### Eerste conclusies
+
+- Het kan. Het is weliswaar een hoop rekenwerk, maar het kan. De data is beschikbaar, lijkt vooralsnog van redelijke kwaliteit, en wat ons betreft komen er figuren uit die verder denken, discussie en werk aanmoedigen.
+- Het is druk in de ankervakken. Zelfs in slechts negen dagen zijn er al honderden interacties tussen schepen.
+- Er lijken in onderling afstand twee groepen te bestaan. Zij die binnen of buiten 200 meter van elkaar in het ankervak zijn.
+- Er zijn duidelijk short en long stay schepen (en dus ook paren) te onderscheiden.
+- Kort durende contacten(minder dan een uur) zijn in de meerderheid, Onderlinge afstand is daarbij variabel.
+
+### Wat is er nodig voor een vervolg
+- Discussie of ingeslagen weg een vervolg verdiend met datascientists
+- Gesprek met datascientists over mogelijke deelonderwerpen vanuit perspectief verschillende diensten
+- Uitbreiden van dataset
+- Beschikbaar stellen van (datascience) capaciteit vanuit verschillende diensten
+
+### Voorkomen van kortste afstanden 
+Van elk paar is bepaald wat de kortste afstand is gedurende de tijd dat de twee schepen in hetzelfde ankervak aanwezig waren
+
+```{r hist_dist, echo = FALSE}
 load ("../Data/1_reading_cleaning/min_afstand_tijd.Rda")
 
 ggplot(data = min_afstand_tijd, aes(x=d_min*1852)) +
@@ -26,10 +59,14 @@ ggplot(data = min_afstand_tijd, aes(x=d_min*1852)) +
   ggtitle("Aantal paren naar kortste onderlinge afstand")
 
 ```
-### Tijdsduur van contact
-overzicht van welke tijdsduur schepen binnen 'bandbreedte' van afstand bij elkaar in de buurt zijn
 
-```{r hist_time}
+In deze grafiek is het opvallend dat veel van de paren een aanzienlijke afstand bij elkaar vandaan blijven. Verder is er een kleinere (maar desondanks aanzienlijke groep) die wel deglijk bij elkaar in de buurt komt.
+Het omslagpunt tussen deze twee groepen ligt rondom de 200 meter.
+
+### Contacttijd
+Paren van schepen hebben een periode waarbinnen gesproken kan worden over 'contacttijd'. Na verloop van tijd zijn ze dusdanig ver uit elkaar dat we ze niet langer als paar beschouwen. In onderstaande grafiek is de tijdsduur van het contact de periode waarbij schepen zich binnen 2 maal de minimale afstand bevinden.
+
+```{r hist_time, echo = FALSE, message = FALSE}
 ggplot(data = subset(min_afstand_tijd, delta_t >0), aes(x=delta_t/3600)) +
   geom_histogram(binwidth = 10, colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
   xlab("Contacttijd (in uren)") +
@@ -38,20 +75,27 @@ ggplot(data = subset(min_afstand_tijd, delta_t >0), aes(x=delta_t/3600)) +
 
 ```
 
-```{r hist_time2}
+In bovenstaande grafiek is duidelijk te zien dat in de regel de contacttijd kort is. Slechts enkele uren. Daarentegen zijn er ook duidelijk paren waarbij dit een veel langere periode is.
+
+Om ook de korte periodes in beeld te brengen, wordt in onderstaande grafiek de langere contacttijden weggelaten
+
+
+```{r hist_time1, echo = FALSE, message = FALSE, warning = FALSE}
 ggplot(data = subset(min_afstand_tijd, delta_t >0), aes(x=delta_t/3600)) +
   geom_histogram(binwidth = 0.1, colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
   xlab("Contacttijd (in uren)") +
+  scale_x_continuous(breaks = seq(0, 10, by=1), limits=c(0,10)) +
   ylab("Aantal paren") +
-  ggtitle("Aantal paren naar tijdsduur contact (versie 2)")
+  ggtitle("Aantal paren naar tijdsduur contact korte termijn focus")
 
 ```
 
+De overgrote contacttijden duren blijkbaar minder dan een uur. Tenminste in de gestelde grens van de periode dat schepen binnen 2 maal de minimale afstand van elkaar bevinden.
 
 ### Tijdsduur van contact vs afstand
-overzicht van welke tijdsduur schepen binnen 'bandbreedte' van afstand bij elkaar in de buurt zijn
+Beide grafiek zijn natuurlijk ook te combineren. Er zijn immers korte contacttijden over lange afstanden én korte afstanden. Net zoals voor lange contacttijden. 
 
-```{r time_dist}
+```{r time_dist, echo = FALSE, message = FALSE}
 ggplot(data = subset(min_afstand_tijd, delta_t >0), aes(x=delta_t/3600, y = d_min*1852)) +
   geom_point(colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
   xlab("Contacttijd (in uren)") +
@@ -60,10 +104,21 @@ ggplot(data = subset(min_afstand_tijd, delta_t >0), aes(x=delta_t/3600, y = d_mi
 
 ```
 
+
+In deze grafiek wordt het al weer een stuk interessanter. Er is een paren van schepen die én ver van elkaar af blijven én lang in het ankervak verblijven met elkaar. Op zich geen verrassing: Dit zijn lange termijn ankeraars die braaf op twee maal de kettinglengte + scheepslengte + wat reserve afstand van elkaar af liggen. Maar er zijn ook schepen die én lang én dicht bij elkaar zijn. Dat is voor een volgend verslag om in beeld te brengen wie dat zijn en wat daar gebeurd.
+
+En natuurlijk goed zichtbaar dat de meeste contact kort duren en op allerlei onderlingen afstanden van elkaar blijven.
+
 ### Heatmap scheepstypen
 
-Aantal contacten per scheepstype
-```{r}
+Naast het karakteriseren van wat de interactie tussen schepen in ankervakken is, kan je natuurlijk ook gaan kijken uit wat voor type schepen die paren nut bestaan.  Het kan natuurlijk ook per land, lengte, bouwjaar, en nog veel meer. Eerst maar eens op type om de gedachtes op gang te brengen.
+
+Op beide assen staan dezelfde scheepstypes (deze zijn een samenvatting van 30 onderliggende types, maar zo blijft de grafiek een beetje leesbaar)
+
+Wie wil weten hoevaak visserschepen een paar vormen zoekt vanuit de horizontale en verticale as het snijpunt. Hoe donkerder dit vlak hoe meer paren uit deze scheepstypes bestaan. Wie zijn muis boven het vlakje plaatst ziet ook het aantal paren.
+
+
+```{r heatmap, echo = FALSE, message = FALSE}
 
 # Heatmap
 S1_Vessel.Type<- c(min_afstand_tijd$S1_Vessel.Type.sum, min_afstand_tijd$S2_Vessel.Type.sum)
@@ -88,11 +143,16 @@ plot_ly(x = colnames(hm_input) , y = colnames(hm_input) , z = hm_input, type = "
 
 ```
 
+Het zijn toch vooral de tankers die vaak aanwezig zijn in de ankervakken en daarom vaak paren vormen met andere type schepen en zichzelf. Maar het zijn zeker niet de enige contacten! Vissers, Cargo, Jachten en Container schepen doen vrolijk mee.
 
 ### Netwerk onderlinge afstand schepen
-Let op: dikte lijn en NIET lengte representeert afstand (verwarrend...)
+Op het moment dat twee schepen een paar vormen gaan zij in feite een verbinding met elkaar aan. Meerder van die verbindingen vormen tezamen een netwerk. Denk aan hierbij ook aan sociale netwerken daar gebeurd hetzelfde.
 
-```{r plot_network}
+Een dergelijk perspectief op gegevens opent een hele nieuwe wereld. Je kan je gaan afvragen of een dergelijk netwerk 'toevallig' de vorm krijgt die je ziet, en of daar verklaringen voor zijn. Je kan ook gaan bepalen welke schepen het meest met andere in contacten komen, of juist een verbindende rol in het netwerk hebben. Of dat er mogelijk groepen zijn te identificern.
+
+Gegeven de kleine dataset waar we in dit verslag van gebruik maken is er nog niet veel over te zeggen, wordt vervolgd.
+
+```{r plot_network, echo = FALSE}
 # Edge list
 data_netwerk <-
   min_afstand_tijd %>%
@@ -114,14 +174,34 @@ edgesize <- (data_netwerk$d_min/(300/1852))*2
 ggnet2(
   netwerk_input,
   node.color = "green",
-  node.size = 4,
-  #edge.size = edgesize,
+  node.size = 3,
+  edge.size = 0.5,
   edge.color = "lightgreen",
-  edge.size = 1,
   label = TRUE,
-  label.size = 1
+  label.size = 0.5
 )
 
 ```
 
 
+### Eindeloze mogelijkheden...
+Nu de data er is kan er eindeloos veel manieren gefilterd worden, daar kan men zich eindeloos in verdwalen. Kunst is dus om heel specifiek te worden. Door het maken van heel specifieke verzoeken. Of door juist vanuit de datanalyse te gaan zoeken naar bijzonderheden in de data. Een voorbeeld van een heel specifiek vraag:
+'Wat zijn de onderlinge afstanden en contacttijden van de TANKER <-> TANkER paren waarbij de contacttijd groter is dan 1 uur en korter dan 24 uur? En welke schepen zijn dit?'
+
+
+```{r tankersubset, echo = FALSE, message = FALSE}
+ShipSubSet <- min_afstand_tijd %>%
+  filter (S1_Vessel.Type.sum == "TANKER") %>%
+  filter (S2_Vessel.Type.sum == "TANKER") %>%
+  filter (delta_t > 60*60) %>%
+  filter (delta_t < 24*60*60)
+  
+  ggplot(data = subset(ShipSubSet, delta_t >0), aes(x=delta_t/3600, y = d_min*1852)) +
+  geom_point(colour = "#FF6666", fill = "#FF6666", alpha = "0.5") +
+  xlab("Contacttijd (in uren)") +
+  ylab("Kortste onderlinge afstand (in meters)") +
+  ggtitle("Tijdsduur contact versus kortste onderlinge afstand per paar")
+  Names <- unique(c(ShipSubSet$S1_Name, ShipSubSet$S2_Name))
+  kableExtra::kable(Names)
+  
+```
