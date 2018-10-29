@@ -63,7 +63,7 @@ if (FALSE) {
 
 #Deze code werkt voor parallel rekenen op Mac, niet voor Windowns
 if (TRUE) {
-  list_min_afstand_tijd<- mclapply(1:length(unique(afstanden_9d_combis$Distance)), fMinAfstand, mc.cores = getOption("mc.cores", 4L))
+  list_min_afstand_tijd<- mclapply(1:length(unique(afstanden_9d_combis$Distance)), fMinAfstand, mc.cores = getOption("mc.cores", 3L))
 }
 
 #lijst converteren naar dataframe

@@ -66,7 +66,7 @@ for (i in 1:length(MMSIUniek_9d)) {
   #call ship page if not testing
   if (TRUE) {page2 <- callAddress(webaddress)}
   #conditional statement to capture failure of finding page due to failed connection
-  if (grepl("cannot open the connection", page2)) {
+  if (grepl("cannot open the connection", page2) || length(str_subset(page2,"ls_vessel")) == 0) {
     PageShipResult[i,] <- "webpage not found"
     PageShipResult$MMSI[i] <- MMSIUniek_9d[i]
   } else

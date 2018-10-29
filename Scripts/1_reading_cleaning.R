@@ -5,8 +5,17 @@ library(stringr)
 
 # Ophalen data en wegschrijven als R-bestanden
 ankervakken_2017Q1 <- read_xlsx("Bronnen/schepenankervakkenq1.xlsx", sheet="All")
-ankervakken_9d <- read.csv2("Bronnen/nieuwe data/20170401-0409.csv", sep = ",",stringsAsFactors=FALSE)
-afstanden_9d_combis <- read.csv2("Bronnen/nieuwe data/distances201704010409.csv", sep = ",", stringsAsFactors=FALSE)
+ankervakken_9d_deel1 <- read.csv2("Bronnen/nieuwe data/20170401-0409.csv", sep = ",",stringsAsFactors=FALSE)
+ankervakken_9d_deel2 <- read.csv2("Bronnen/nieuwe data/20170410-0419.csv", sep = ",",stringsAsFactors=FALSE)
+ankervakken_9d_deel3 <- read.csv2("Bronnen/nieuwe data/20170420-0430.csv", sep = ",",stringsAsFactors=FALSE)
+#temporary not using ankervakken_9d_deel1 because different layout to be corrected.
+ankervakken_9d <- rbind(ankervakken_9d_deel2, ankervakken_9d_deel3)
+
+afstanden_9d_combis_deel1 <- read.csv2("Bronnen/nieuwe data/distances201704010409.csv", sep = ",", stringsAsFactors=FALSE)
+afstanden_9d_combis_deel2 <- read.csv2("Bronnen/nieuwe data/distances201704100419.csv", sep = ",", stringsAsFactors=FALSE)
+afstanden_9d_combis_deel3 <- read.csv2("Bronnen/nieuwe data/distances201704200430.csv", sep = ",", stringsAsFactors=FALSE)
+afstanden_9d_combis <- rbind (afstanden_9d_combis_deel1, afstanden_9d_combis_deel2, afstanden_9d_combis_deel3)
+
 ship_features <- read.csv2("Bronnen/Dataset Patrick.csv", sep = ",", stringsAsFactors=FALSE)
 ship_type_summary <- read.csv2("Bronnen/ShipTypeSummary.csv", sep = ",", stringsAsFactors=FALSE, header=FALSE)
 
