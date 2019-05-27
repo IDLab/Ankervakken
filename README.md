@@ -1,10 +1,11 @@
 # Ankervakken
 
-This repository facilitates code sharing for the project `Ankervakken' employed within the ILT.
+This repository facilitates code sharing for the project 'Ankervakken' employed within the ILT.
 
 # Files in use
 
 The following files are in use for this project:
+
 | File Name                                   | MD5sum                           | Size
 |:-------------------------------------------:|:--------------------------------:|:---:|
 | db_20170401_00-00_20170409_23-59_int_30.csv | fde583ede8651f9c4594df7afb72be05 | 14 GB |
